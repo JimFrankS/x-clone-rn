@@ -14,7 +14,16 @@ export const getUserProfile = asyncHandler(async(req, res) => {
 export const updateProfile = asyncHandler (async (req, res) => {
     const {userID} = getAuth(req); // Get the authenticated user's ID from the request
 
-    const user = await User.findOneAndUpdate({ clerkId: userID}, req.body, {new: true}); // Find the user by Clerk ID and update their profile with the request body, returning the updated user
+    // Validate and sanitize allowed fields
+    const allowedFields = ['firstname', 'lastname', 'profilePicture', 'bio'];
+    const updateData = {};
+    Object.keys(req.body).forEach(key => {
+        if (allowedFields.includes(key)) {
+            updateData[key] = req.body[key];
+        }
+    });
+
+    const user = await User.findOneAndUpdate({ clerkId: userID}, updateData, {new: true}); // Find the user by Clerk ID and update their profile with the sanitized data
     if (!user) return res.status(404).json({ message: "User not found" }); // If user not found, return 404 status with message
     res.status(200).json({user}); // If user found, return 200 status with the updated user data
 });
@@ -23,7 +32,7 @@ export const syncUser = asyncHandler (async (req, res) => {
 
     const { userID } = getAuth(req); // Get the authenticated user's ID from the request
 
-    const existingUser = await User.findOne({ clerkId: req.auth().userId }); // Check if the user already exists in the database using their Clerk ID
+    const existingUser = await User.findOne({ clerkId: userID }); // Check if a user with the given Clerk ID already exists in the database
     if (existingUser) {
         return res.status(200).json({ user: existingUser, message: "User already exists" }); // If user exists, return 200 status with the existing user data and a message
     } 
@@ -99,3 +108,4 @@ export const followUser = asyncHandler(async (req, res) => {
     message: isFollowing ? "User unfollowed successfully" : "User followed successfully",
   });
 });
+
