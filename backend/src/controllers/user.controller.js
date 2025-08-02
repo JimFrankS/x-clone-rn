@@ -28,6 +28,17 @@ export const updateProfile = asyncHandler (async (req, res) => {
     res.status(200).json({user}); // If user found, return 200 status with the updated user data
 });
 
+// Helper to generate a unique username based on a base username
+async function generateUniqueUsername(baseUsername) {
+    let username = baseUsername;
+    let counter = 0;
+    while (await User.findOne({ username })) {
+        counter++;
+        username = `${baseUsername}${counter}`;
+    }
+    return username;
+}
+
 export const syncUser = asyncHandler (async (req, res) => {
 
     const { userID } = getAuth(req); // Get the authenticated user's ID from the request
@@ -44,7 +55,7 @@ export const syncUser = asyncHandler (async (req, res) => {
         email: clerkUser.emailAddresses[0].emailAddress, // Store the user's email address
         firstname: clerkUser.firstName || "", // Store the user's first name, defaulting to an empty string if not available
         lastname: clerkUser.lastName || "", // Store the user's last name, defaulting to an empty string if not available
-        username: clerkUser.emailAddresses[0].emailAddress.split("@")[0], // Generate a username from the email address by taking the part before the '@'
+        username: await generateUniqueUsername(clerkUser.emailAddresses[0].emailAddress.split("@")[0]), // Generate a unique username from the email address
         profilePicture: clerkUser.profileImageUrl || "", // Store the user's profile picture URL, defaulting to an empty string if not available
     };
 
