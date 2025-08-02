@@ -1,4 +1,5 @@
 import asyncHandler from "express-async-handler"; // Import asyncHandler to handle asynchronous route handlers, which helps in catching errors and passing them to the error handler
+import mongoose from "mongoose"; // Import mongoose to interact with MongoDB and perform database operations 
 import User from "../models/user.model.js"; // Import the User model to interact with user data in the database
 import Notification from "../models/notification.model.js"; // Import the Notification model to handle user notifications
 import { clerkClient, getAuth } from "@clerk/express"; // Import Clerk client and getAuth function to manage user authentication and data retrieval from Clerk
@@ -80,43 +81,52 @@ export const followUser = asyncHandler(async (req, res) => {
   if (userId === targetUserId) return res.status(400).json({ error: "You cannot follow yourself" }); // Prevent the user from following themselves
 
   // Find both the current user and the target user in the database
-
   const currentUser = await User.findOne({ clerkId: userId });
   const targetUser = await User.findById(targetUserId);
 
   if (!currentUser || !targetUser) return res.status(404).json({ error: "User not found" });
 
-    // Check if the current user is already following the target user
-
+  // Check if the current user is already following the target user
   const isFollowing = currentUser.following.includes(targetUserId);
 
-  if (isFollowing) {
-    // unfollow
-    await User.findByIdAndUpdate(currentUser._id, {
-      $pull: { following: targetUserId },
-    });
-    await User.findByIdAndUpdate(targetUserId, {
-      $pull: { followers: currentUser._id },
-    });
-  } else {
-    // follow
-    await User.findByIdAndUpdate(currentUser._id, {
-      $push: { following: targetUserId },
-    });
-    await User.findByIdAndUpdate(targetUserId, {
-      $push: { followers: currentUser._id },
-    });
+  const session = await mongoose.startSession(); // Start a new session for transaction handling which allows us to ensure atomicity
+  session.startTransaction(); // Start a transaction to ensure that both follow/unfollow actions and notification creation are atomic 
+  try {
+    if (isFollowing) {
+      // unfollow
+      await User.findByIdAndUpdate(currentUser._id, {
+        $pull: { following: targetUserId },
+      }, { session });
+      await User.findByIdAndUpdate(targetUserId, {
+        $pull: { followers: currentUser._id },
+      }, { session });
+    } else {
+      // follow
+      await User.findByIdAndUpdate(currentUser._id, {
+        $push: { following: targetUserId },
+      }, { session });
+      await User.findByIdAndUpdate(targetUserId, {
+        $push: { followers: currentUser._id },
+      }, { session });
 
-    // create notification
-    await Notification.create({
-      from: currentUser._id,
-      to: targetUserId,
-      type: "follow",
+      // create notification
+      await Notification.create([
+        {
+          from: currentUser._id,
+          to: targetUserId,
+          type: "follow",
+        }
+      ], { session });
+    }
+    await session.commitTransaction();
+    res.status(200).json({
+      message: isFollowing ? "User unfollowed successfully" : "User followed successfully",
     });
+  } catch (error) {
+    await session.abortTransaction(); // If an error occurs, abort the transaction to ensure no partial updates
+    throw error;
+  } finally {
+    session.endSession(); // End the session to free up resources
   }
-
-  res.status(200).json({
-    message: isFollowing ? "User unfollowed successfully" : "User followed successfully",
-  });
 });
 
