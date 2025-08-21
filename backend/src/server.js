@@ -4,6 +4,7 @@ import {clerkMiddleware} from "@clerk/express"; // Import Clerk middleware for a
 
 import userRoutes from "./routes/user.route.js"; // Import user routes from user.route.js
 import postRoutes from "./routes/post.route.js"; // Import post routes from post.route.js
+import commentRoutes from "./routes/comment.route.js"; // Import comment routes from comment.route.js
 
 
 import { ENV } from "./config/env.js"; // Import environment variables
@@ -20,7 +21,8 @@ app.use(clerkMiddleware()); // Use Clerk middleware for authentication
 app.get("/", (req, res) => res.send("Hello from server")) // Simple route to test server
 
 app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes); // Use post routes for handling post-related requests
+app.use("/api/posts", postRoutes);
+app.use("/api/comments", commentRoutes)
 
 
 //error handling middleware
