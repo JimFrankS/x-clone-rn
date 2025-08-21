@@ -42,7 +42,10 @@ const startServer = async () => {
     try {
         await connectDB(); // Connect to the database
 
-        app.listen(ENV.PORT, () => console.log("Server is running on port", ENV.PORT)); // Start the server on the specified port
+          if (ENV.NODE_ENV !== "production") { 
+      app.listen(ENV.PORT, () => console.log("Server is up and running on PORT:", ENV.PORT)); // Start the server on the specified port if not in production
+
+    }
 
     } catch (error) {
         console.error("Error starting server:", error); // Log any errors that occur during server startup
@@ -51,3 +54,5 @@ const startServer = async () => {
 };
 
 startServer(); // Call the function to start the server
+
+export default app; // Export the Express application instance for use in vercel
