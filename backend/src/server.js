@@ -3,6 +3,7 @@ import cors from "cors"; // Import CORS middleware for handling cross-origin req
 import {clerkMiddleware} from "@clerk/express"; // Import Clerk middleware for authentication
 
 import userRoutes from "./routes/user.route.js"; // Import user routes from user.route.js
+import postRoutes from "./routes/post.route.js"; // Import post routes from post.route.js
 
 
 import { ENV } from "./config/env.js"; // Import environment variables
@@ -19,7 +20,17 @@ app.use(clerkMiddleware()); // Use Clerk middleware for authentication
 app.get("/", (req, res) => res.send("Hello from server")) // Simple route to test server
 
 app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes); // Use post routes for handling post-related requests
 
+
+//error handling middleware
+
+app.use((err, req, res, next) => {
+    console.error("Unhandled error:", err); // Log the error to the console
+    res.status(500).json({ error: err.message ||"Internal Server Error" }); // Send a 500 Internal Server Error response with the error message
+
+    next(); // Call the next middleware in the stack
+})
 
 const startServer = async () => {
     try {
