@@ -5,10 +5,12 @@ import {clerkMiddleware} from "@clerk/express"; // Import Clerk middleware for a
 import userRoutes from "./routes/user.route.js"; // Import user routes from user.route.js
 import postRoutes from "./routes/post.route.js"; // Import post routes from post.route.js
 import commentRoutes from "./routes/comment.route.js"; // Import comment routes from comment.route.js
+import notificationRoutes from "./routes/notification.route.js"; // Import notification routes from notification.route.js
 
 
 import { ENV } from "./config/env.js"; // Import environment variables
 import { connectDB } from "./config/db.js"; // Import database connection function
+import { arcjetMiddleware } from "./middleware/arcjet.middleware.js";
 
 
 const app = express(); // Create an instance of Express application
@@ -17,12 +19,14 @@ app.use(cors()); // Use CORS middleware to allow cross-origin requests
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 app.use(clerkMiddleware()); // Use Clerk middleware for authentication
+app.use(arcjetMiddleware); // Use Arcjet middleware for security features
 
 app.get("/", (req, res) => res.send("Hello from server")) // Simple route to test server
 
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes)
+app.use("/api/notifications", notificationRoutes); 
 
 
 //error handling middleware
