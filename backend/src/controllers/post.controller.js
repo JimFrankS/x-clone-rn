@@ -4,6 +4,7 @@ import User from "../models/user.model.js"; // Import User model to interact wit
 import { getAuth } from "@clerk/express";
 import cloudinary from "../config/cloudinary.js"; // Import Cloudinary configuration for image uploads
 import Notification from "../models/notification.model.js"; // Import Notification model to handle notifications
+import Comment from "../models/comment.model.js"; // Import Comment model to handle comments on posts
 
 
 export const getPosts = asyncHandler (async (req, res) => {

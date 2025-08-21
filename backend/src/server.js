@@ -25,9 +25,11 @@ app.use("/api/posts", postRoutes); // Use post routes for handling post-related 
 
 //error handling middleware
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
     console.error("Unhandled error:", err); // Log the error to the console
     res.status(500).json({ error: err.message ||"Internal Server Error" }); // Send a 500 Internal Server Error response with the error message
+
+    next(); // Call the next middleware in the stack
 })
 
 const startServer = async () => {
