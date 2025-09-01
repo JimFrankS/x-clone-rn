@@ -10,7 +10,7 @@ const { handleSocialAuth, isLoading } = useSocialAuth(); // Destructure handleSo
       {/* Demo image */} 
       <View className="items-center"> {/* Start of authentication image */}
           <Image
-            source={require("../../../assets/images/auth2.png")}
+            source={require("../../assets/images/auth2.png")}
             className="size-96"
             resizeMode="contain"
           />
@@ -33,7 +33,7 @@ const { handleSocialAuth, isLoading } = useSocialAuth(); // Destructure handleSo
             ) : (
               <View className="flex-row items-center justify-center"> {/* Start of Google logo and text */}
               <Image // Google logo
-                source={require("../../../assets/images/google.png")}
+                source={require("../../assets/images/google.png")}
                 className="size-10 mr-3"
                 resizeMode="contain"
               />
@@ -63,7 +63,7 @@ const { handleSocialAuth, isLoading } = useSocialAuth(); // Destructure handleSo
             ) : (
               <View className="flex-row items-center justify-center"> {/* Start of Apple logo and text */}
               <Image // Apple logo
-                source={require("../../../assets/images/apple.png")}
+                source={require("../../assets/images/apple.png")}
                 className="size-8 mr-3"
                 resizeMode="contain"
               />
