@@ -12,7 +12,6 @@ const TRENDING_TOPICS = [
   { topic: "#ReactNative", tweets: "125k"},
 ];
 
-{/*  */}
 const SearchScreen = () => {
   return (
     <SafeAreaView className='flex-1 bg-white'>
