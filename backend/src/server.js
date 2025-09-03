@@ -19,7 +19,7 @@ app.use(cors()); // Use CORS middleware to allow cross-origin requests
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 app.use(clerkMiddleware()); // Use Clerk middleware for authentication
-app.use(arcjetMiddleware); // Use Arcjet middleware for security features
+//app.use(arcjetMiddleware); // Use Arcjet middleware for security features
 
 app.get("/", (req, res) => res.send("Hello from server")) // Simple route to test server
 
