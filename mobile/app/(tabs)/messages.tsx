@@ -19,7 +19,7 @@ const deleteConversation = (conversationId: number) => { // function to delete a
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => { // delete the conversation from the list and update the state */
+        onPress: () => { // delete the conversation from the list and update the state
           setConversationsList((prev) => prev.filter((conv) => conv.id !== conversationId));
         },
       },
