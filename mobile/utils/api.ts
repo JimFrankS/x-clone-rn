@@ -1,11 +1,13 @@
-import axios, {AxiosInstance } from "axios"; 
+import axios, {AxiosInstance, AxiosError } from "axios";
 import { useAuth } from "@clerk/clerk-expo";
 
-const API_BASE_URL = "https://x-clone-rn-gamma.vercel.app/" // replace with your actual API base URL
+const API_BASE_URL = "https://x-clone-rn-gamma.vercel.app" // replace with your actual API base URL
+
+export const TIMEOUT_ERROR_MESSAGE = "Request timed out. Please check your network connection and try again.";
 
 // create an axios instance with custom request interceptor to make sure the token is added to the request headers, ensuring authenticated requests are made
-export const createApiClient = (getToken:() => Promise<string | null>): AxiosInstance => { 
-    const api = axios.create ({baseURL:API_BASE_URL});
+export const createApiClient = (getToken:() => Promise<string | null>, timeout: number = 15000): AxiosInstance => {
+    const api = axios.create ({baseURL:API_BASE_URL, timeout});
 
     api.interceptors.request.use(async (config) => {
     const token = await getToken();
@@ -15,6 +17,19 @@ export const createApiClient = (getToken:() => Promise<string | null>): AxiosIns
     }
     return config;
 });
+
+    api.interceptors.response.use(
+        response => response,
+        error => {
+            if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
+                // Preserve AxiosError metadata by mutating the original error
+                error.message = TIMEOUT_ERROR_MESSAGE;
+                return Promise.reject(error);
+            }
+            return Promise.reject(error);
+        }
+    );
+
     return api;
 };
 
