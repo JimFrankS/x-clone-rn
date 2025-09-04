@@ -44,12 +44,22 @@ export const syncUser = asyncHandler (async (req, res) => {
 
     const { userID } = getAuth(req); // Get the authenticated user's ID from the request
 
+    if (!userID) {
+        return res.status(401).json({ message: "Unauthorized - invalid user ID" });
+    }
+
     const existingUser = await User.findOne({ clerkId: userID }); // Check if a user with the given Clerk ID already exists in the database
     if (existingUser) {
         return res.status(200).json({ user: existingUser, message: "User already exists" }); // If user exists, return 200 status with the existing user data and a message
-    } 
+    }
 
-    const clerkUser = await clerkClient.users.getUser(userID); // Create a new user in the database using the authenticated user's Clerk ID and other details
+    let clerkUser;
+    try {
+        clerkUser = await clerkClient.users.getUser(userID); // Create a new user in the database using the authenticated user's Clerk ID and other details
+    } catch (error) {
+        console.error("Error fetching user from Clerk:", error);
+        return res.status(500).json({ message: "Failed to fetch user data from Clerk" });
+    }
 
     const userData = {
         clerkId: userID, // Store the Clerk ID
@@ -60,7 +70,14 @@ export const syncUser = asyncHandler (async (req, res) => {
         profilePicture: clerkUser.profileImageUrl || "", // Store the user's profile picture URL, defaulting to an empty string if not available
     };
 
-    const user = await User.create(userData); // Create a new user in the database with the userData object
+    let user;
+    try {
+        user = await User.create(userData); // Create a new user in the database with the userData object
+    } catch (error) {
+        console.error("Error creating user in database:", error);
+        return res.status(500).json({ message: "Failed to create user in database" });
+    }
+
     res.status(201).json({ user, message: "User created successfully" }); // Return 201 status with the newly created user data and a success message
 
 });
