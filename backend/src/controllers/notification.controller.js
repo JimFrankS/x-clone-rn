@@ -33,5 +33,5 @@ export const deleteNotification = asyncHandler(async (req, res) => {
 
   if (!notification) return res.status(404).json({ error: "Notification not found" });
 
-  res.status(200).json({ message: "Notification deleted successfully" });
+  res.status(200).json({ error: "Notification deleted successfully" });
 });
