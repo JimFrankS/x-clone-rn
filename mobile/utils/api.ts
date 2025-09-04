@@ -1,7 +1,7 @@
 import axios, {AxiosInstance, AxiosError } from "axios";
 import { useAuth } from "@clerk/clerk-expo";
 
-const API_BASE_URL = "https://x-clone-rn-gamma.vercel.app" // replace with your actual API base URL
+const API_BASE_URL = "https://x-clone-rn-gamma.vercel.app/" // replace with your actual API base URL
 
 export const TIMEOUT_ERROR_MESSAGE = "Request timed out. Please check your network connection and try again.";
 

@@ -42,7 +42,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
     try {
         await connectDB(); // Connect to the database
-        consolo.log("Database connected");
+        console.log("Database connected");
 
           if (ENV.NODE_ENV !== "production") { 
       app.listen(ENV.PORT, () => console.log("Server is up and running on PORT:", ENV.PORT)); // Start the server on the specified port if not in production
