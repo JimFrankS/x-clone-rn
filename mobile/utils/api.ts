@@ -11,7 +11,6 @@ export const createApiClient = (getToken:() => Promise<string | null>, timeout: 
 
     api.interceptors.request.use(async (config) => {
     const token = await getToken();
-    console.log("Auth token:", token); // Add this line for debugging
     if (token){
         config.headers.Authorization = `Bearer ${token}`;
     }

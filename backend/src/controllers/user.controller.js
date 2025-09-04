@@ -73,11 +73,16 @@ export const syncUser = asyncHandler (async (req, res) => {
         ? primaryEmail.split("@")[0]
         : `user${Date.now()}`; // Fallback username with timestamp
 
+    // Validate required fields
+    if (!clerkUser.firstName || !clerkUser.lastName) {
+        return res.status(400).json({ message: "Invalid user data from Clerk" });
+    }
+
     const userData = {
         clerkId: userId, // Store the Clerk ID
         email: primaryEmail || "", // Store the user's email address
-        firstName: clerkUser.firstName || "", // Store the user's first name, defaulting to an empty string if not available
-        lastName: clerkUser.lastName || "", // Store the user's last name, defaulting to an empty string if not available
+        firstName: clerkUser.firstName.trim(), // Store the user's first name, trimmed
+        lastName: clerkUser.lastName.trim(), // Store the user's last name, trimmed
         username: await generateUniqueUsername(baseUsername), // Generate a unique username from the email address or fallback
         profilePicture: clerkUser.profileImageUrl || "", // Store the user's profile picture URL, defaulting to an empty string if not available
     };
