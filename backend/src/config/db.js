@@ -3,6 +3,10 @@ import { ENV } from "./env.js"; // Import environment variables
 
 export const connectDB = async () => {
     try {
+        if (mongoose.connection.readyState === 1) {
+            console.log("MongoDB already connected");
+            return;
+        }
         await mongoose.connect(ENV.MONGO_URI, {
             connectTimeoutMS: 30000, // 30 seconds
             serverSelectionTimeoutMS: 30000, // 30 seconds

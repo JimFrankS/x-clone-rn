@@ -45,9 +45,7 @@ async function generateUniqueUsername(baseUsername) {
 }
 
 export const syncUser = asyncHandler (async (req, res) => {
-    console.log("syncUser called, req.auth:", req.auth); // Log req.auth for debugging
     const { userId } = getAuth(req); // Get the authenticated user's ID from the request
-    console.log("syncUser userId from getAuth:", userId); // Log userId for debugging
 
     if (!userId) {
         return res.status(401).json({ message: "Unauthorized - invalid user ID" });
