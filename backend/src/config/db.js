@@ -3,10 +3,15 @@ import { ENV } from "./env.js"; // Import environment variables
 
 export const connectDB = async () => {
     try {
-        await mongoose.connect(ENV.MONGO_URI) // Connect to MongoDB using the URI from environment variables
-        console.log("MongoDB connected successfully ✅"); // Log success message if connection is successful
+        await mongoose.connect(ENV.MONGO_URI, {
+            connectTimeoutMS: 30000, // 30 seconds
+            serverSelectionTimeoutMS: 30000, // 30 seconds
+            socketTimeoutMS: 45000, // 45 seconds
+        });
+        console.log("MongoDB connected successfully ✅");
     } catch (error) {
-        console.log("Error connecting to MongoDB:", error.message); // Log error message if connection fails
-        process.exit(1); // Exit the process if connection fails
+        console.log("Error connecting to MongoDB:", error.message);
+        // Don't exit in serverless - let the function handle the error
+        throw error; // Re-throw to be handled by calling code
     }
 }
