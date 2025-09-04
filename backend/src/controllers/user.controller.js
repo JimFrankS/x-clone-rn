@@ -20,7 +20,7 @@ export const updateProfile = asyncHandler (async (req, res) => {
     }
 
     // Validate and sanitize allowed fields
-    const allowedFields = ['firstname', 'lastname', 'profilePicture', 'bio'];
+    const allowedFields = ['firstName', 'lastName', 'profilePicture', 'bio'];
     const updateData = {};
     Object.keys(req.body).forEach(key => {
         if (allowedFields.includes(key)) {
@@ -65,12 +65,21 @@ export const syncUser = asyncHandler (async (req, res) => {
         return res.status(500).json({ message: "Failed to fetch user data from Clerk" });
     }
 
+    // Safely extract email and generate username
+    const primaryEmail = clerkUser.emailAddresses && clerkUser.emailAddresses[0]
+        ? clerkUser.emailAddresses[0].emailAddress
+        : null;
+
+    const baseUsername = primaryEmail
+        ? primaryEmail.split("@")[0]
+        : `user${Date.now()}`; // Fallback username with timestamp
+
     const userData = {
         clerkId: userId, // Store the Clerk ID
-        email: clerkUser.emailAddresses[0].emailAddress, // Store the user's email address
-        firstname: clerkUser.firstName || "", // Store the user's first name, defaulting to an empty string if not available
-        lastname: clerkUser.lastName || "", // Store the user's last name, defaulting to an empty string if not available
-        username: await generateUniqueUsername(clerkUser.emailAddresses[0].emailAddress.split("@")[0]), // Generate a unique username from the email address
+        email: primaryEmail || "", // Store the user's email address
+        firstName: clerkUser.firstName || "", // Store the user's first name, defaulting to an empty string if not available
+        lastName: clerkUser.lastName || "", // Store the user's last name, defaulting to an empty string if not available
+        username: await generateUniqueUsername(baseUsername), // Generate a unique username from the email address or fallback
         profilePicture: clerkUser.profileImageUrl || "", // Store the user's profile picture URL, defaulting to an empty string if not available
     };
 
