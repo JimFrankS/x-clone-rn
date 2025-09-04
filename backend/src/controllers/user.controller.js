@@ -7,7 +7,7 @@ import { clerkClient, getAuth } from "@clerk/express"; // Import Clerk client an
 export const getUserProfile = asyncHandler(async(req, res) => {
     const { username } = req.params; // Extract the username from the request parameters
     const user = await User.findOne({ username }).select("-password -__v"); // Find the user by username, excluding password and version fields
-    if (!user)  return res.status(404).json({ message: "User not found" }); // If user not found, return 404 status with message
+    if (!user)  return res.status(404).json({ error: "User not found" }); // If user not found, return 404 status with message
     res.status(200).json(user); // If user found, return 200 status with
 });
 
@@ -16,7 +16,7 @@ export const updateProfile = asyncHandler (async (req, res) => {
     const {userId} = getAuth(req); // Get the authenticated user's ID from the request
 
     if (!userId) {
-        return res.status(401).json({ message: "Unauthorized - invalid user ID" });
+        return res.status(401).json({ error: "Unauthorized - invalid user ID" });
     }
 
     // Validate and sanitize allowed fields
@@ -24,12 +24,13 @@ export const updateProfile = asyncHandler (async (req, res) => {
     const updateData = {};
     Object.keys(req.body).forEach(key => {
         if (allowedFields.includes(key)) {
-            updateData[key] = req.body[key];
+            const val = req.body[key];
+            updateData[key] = typeof val === "string" ? val.trim() : val;
         }
     });
 
     const user = await User.findOneAndUpdate({ clerkId: userId}, updateData, {new: true}); // Find the user by Clerk ID and update their profile with the sanitized data
-    if (!user) return res.status(404).json({ message: "User not found" }); // If user not found, return 404 status with message
+    if (!user) return res.status(404).json({ error: "User not found" }); // If user not found, return 404 status with message
     res.status(200).json({user}); // If user found, return 200 status with the updated user data
 });
 
@@ -48,7 +49,7 @@ export const syncUser = asyncHandler (async (req, res) => {
     const { userId } = getAuth(req); // Get the authenticated user's ID from the request
 
     if (!userId) {
-        return res.status(401).json({ message: "Unauthorized - invalid user ID" });
+        return res.status(401).json({ error: "Unauthorized - invalid user ID" });
     }
 
     const existingUser = await User.findOne({ clerkId: userId }); // Check if a user with the given Clerk ID already exists in the database
@@ -61,28 +62,32 @@ export const syncUser = asyncHandler (async (req, res) => {
         clerkUser = await clerkClient.users.getUser(userId); // Create a new user in the database using the authenticated user's Clerk ID and other details
     } catch (error) {
         console.error("Error fetching user from Clerk:", error);
-        return res.status(500).json({ message: "Failed to fetch user data from Clerk" });
+        return res.status(500).json({ error: "Failed to fetch user data from Clerk" });
     }
 
     // Safely extract email and generate username
-    const primaryEmail = clerkUser.emailAddresses && clerkUser.emailAddresses[0]
-        ? clerkUser.emailAddresses[0].emailAddress
-        : null;
+    const primaryEmailObj =
+        clerkUser.emailAddresses?.find(e => e.id === clerkUser.primaryEmailAddressId)
+        ?? clerkUser.emailAddresses?.[0];
+    const primaryEmail = primaryEmailObj?.emailAddress ?? null;
 
     const baseUsername = primaryEmail
         ? primaryEmail.split("@")[0]
         : `user${Date.now()}`; // Fallback username with timestamp
 
-    // Validate required fields
-    if (!clerkUser.firstName || !clerkUser.lastName) {
-        return res.status(400).json({ message: "Invalid user data from Clerk" });
+    // Validate and trim required fields
+    const trimmedFirstName = clerkUser.firstName?.trim();
+    const trimmedLastName = clerkUser.lastName?.trim();
+
+    if (!trimmedFirstName || !trimmedLastName) {
+        return res.status(400).json({ error: "Invalid user data from Clerk" });
     }
 
     const userData = {
         clerkId: userId, // Store the Clerk ID
         email: primaryEmail || "", // Store the user's email address
-        firstName: clerkUser.firstName.trim(), // Store the user's first name, trimmed
-        lastName: clerkUser.lastName.trim(), // Store the user's last name, trimmed
+        firstName: trimmedFirstName, // Store the user's first name, trimmed
+        lastName: trimmedLastName, // Store the user's last name, trimmed
         username: await generateUniqueUsername(baseUsername), // Generate a unique username from the email address or fallback
         profilePicture: clerkUser.profileImageUrl || "", // Store the user's profile picture URL, defaulting to an empty string if not available
     };
@@ -91,8 +96,21 @@ export const syncUser = asyncHandler (async (req, res) => {
     try {
         user = await User.create(userData); // Create a new user in the database with the userData object
     } catch (error) {
-        console.error("Error creating user in database:", error);
-        return res.status(500).json({ message: "Failed to create user in database" });
+        // Handle duplicate key error for username
+        if (error.code === 11000 && error.keyPattern?.username) {
+            // Retry with a new username
+            const retryUsername = await generateUniqueUsername(`${baseUsername}_retry`);
+            userData.username = retryUsername;
+            try {
+                user = await User.create(userData);
+            } catch (retryError) {
+                console.error("Error creating user in database after retry:", retryError);
+                return res.status(500).json({ error: "Failed to create user in database" });
+            }
+        } else {
+            console.error("Error creating user in database:", error);
+            return res.status(500).json({ error: "Failed to create user in database" });
+        }
     }
 
     res.status(201).json({ user, message: "User created successfully" }); // Return 201 status with the newly created user data and a success message
@@ -103,11 +121,11 @@ export const getCurrentUser = asyncHandler( async (req, res) => {
     const { userId } = getAuth(req); // Get the authenticated user's ID from the request
 
     if (!userId) {
-        return res.status(401).json({ message: "Unauthorized - invalid user ID" });
+        return res.status(401).json({ error: "Unauthorized - invalid user ID" });
     }
 
     const user = await User.findOne({ clerkId: userId }).select("-password -__v"); // Find the user by Clerk ID, excluding password and version fields
-    if (!user) return res.status(404).json({ message: "User not found" }); // If user not found, return 404 status with message
+    if (!user) return res.status(404).json({ error: "User not found" }); // If user not found, return 404 status with message
 
     res.status(200).json(user); // If user found, return 200 status with the user data
 
@@ -118,7 +136,7 @@ export const followUser = asyncHandler(async (req, res) => {
   const { targetUserId } = req.params; // Extract the target user's ID from the request parameters
 
   if (!userId) {
-    return res.status(401).json({ message: "Unauthorized - invalid user ID" });
+    return res.status(401).json({ error: "Unauthorized - invalid user ID" });
   }
 
   if (userId === targetUserId) return res.status(400).json({ error: "You cannot follow yourself" }); // Prevent the user from following themselves
