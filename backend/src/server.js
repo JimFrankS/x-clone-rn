@@ -19,6 +19,7 @@ app.use(cors()); // Use CORS middleware to allow cross-origin requests
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 app.use(clerkMiddleware()); // Use Clerk middleware for authentication
+
 // app.use(arcjetMiddleware); // Use Arcjet middleware for security features - disabled
 
 app.get("/", (req, res) => res.send("Hello from server")) // Simple route to test server
@@ -41,6 +42,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
     try {
         await connectDB(); // Connect to the database
+        consolo.log("Database connected");
 
           if (ENV.NODE_ENV !== "production") { 
       app.listen(ENV.PORT, () => console.log("Server is up and running on PORT:", ENV.PORT)); // Start the server on the specified port if not in production
