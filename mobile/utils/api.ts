@@ -1,4 +1,4 @@
-import axios, {AxiosInstance } from "axios";
+import axios, {AxiosInstance, AxiosError } from "axios";
 import { useAuth } from "@clerk/clerk-expo";
 
 const API_BASE_URL = "https://x-clone-rn-gamma.vercel.app" // replace with your actual API base URL
@@ -22,7 +22,9 @@ export const createApiClient = (getToken:() => Promise<string | null>, timeout: 
         response => response,
         error => {
             if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
-                throw new Error(TIMEOUT_ERROR_MESSAGE);
+                // Preserve AxiosError metadata by mutating the original error
+                error.message = TIMEOUT_ERROR_MESSAGE;
+                return Promise.reject(error);
             }
             return Promise.reject(error);
         }

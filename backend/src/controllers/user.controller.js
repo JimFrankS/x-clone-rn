@@ -13,7 +13,11 @@ export const getUserProfile = asyncHandler(async(req, res) => {
 
 
 export const updateProfile = asyncHandler (async (req, res) => {
-    const {userID} = getAuth(req); // Get the authenticated user's ID from the request
+    const {userId} = getAuth(req); // Get the authenticated user's ID from the request
+
+    if (!userId) {
+        return res.status(401).json({ message: "Unauthorized - invalid user ID" });
+    }
 
     // Validate and sanitize allowed fields
     const allowedFields = ['firstname', 'lastname', 'profilePicture', 'bio'];
@@ -24,7 +28,7 @@ export const updateProfile = asyncHandler (async (req, res) => {
         }
     });
 
-    const user = await User.findOneAndUpdate({ clerkId: userID}, updateData, {new: true}); // Find the user by Clerk ID and update their profile with the sanitized data
+    const user = await User.findOneAndUpdate({ clerkId: userId}, updateData, {new: true}); // Find the user by Clerk ID and update their profile with the sanitized data
     if (!user) return res.status(404).json({ message: "User not found" }); // If user not found, return 404 status with message
     res.status(200).json({user}); // If user found, return 200 status with the updated user data
 });
@@ -42,27 +46,27 @@ async function generateUniqueUsername(baseUsername) {
 
 export const syncUser = asyncHandler (async (req, res) => {
 
-    const { userID } = getAuth(req); // Get the authenticated user's ID from the request
+    const { userId } = getAuth(req); // Get the authenticated user's ID from the request
 
-    if (!userID) {
+    if (!userId) {
         return res.status(401).json({ message: "Unauthorized - invalid user ID" });
     }
 
-    const existingUser = await User.findOne({ clerkId: userID }); // Check if a user with the given Clerk ID already exists in the database
+    const existingUser = await User.findOne({ clerkId: userId }); // Check if a user with the given Clerk ID already exists in the database
     if (existingUser) {
         return res.status(200).json({ user: existingUser, message: "User already exists" }); // If user exists, return 200 status with the existing user data and a message
     }
 
     let clerkUser;
     try {
-        clerkUser = await clerkClient.users.getUser(userID); // Create a new user in the database using the authenticated user's Clerk ID and other details
+        clerkUser = await clerkClient.users.getUser(userId); // Create a new user in the database using the authenticated user's Clerk ID and other details
     } catch (error) {
         console.error("Error fetching user from Clerk:", error);
         return res.status(500).json({ message: "Failed to fetch user data from Clerk" });
     }
 
     const userData = {
-        clerkId: userID, // Store the Clerk ID
+        clerkId: userId, // Store the Clerk ID
         email: clerkUser.emailAddresses[0].emailAddress, // Store the user's email address
         firstname: clerkUser.firstName || "", // Store the user's first name, defaulting to an empty string if not available
         lastname: clerkUser.lastName || "", // Store the user's last name, defaulting to an empty string if not available
@@ -83,8 +87,13 @@ export const syncUser = asyncHandler (async (req, res) => {
 });
 
 export const getCurrentUser = asyncHandler( async (req, res) => {
-    const { userID } = getAuth(req); // Get the authenticated user's ID from the request
-    const user = await User.findOne({ clerkId: userID }).select("-password -__v"); // Find the user by Clerk ID, excluding password and version fields
+    const { userId } = getAuth(req); // Get the authenticated user's ID from the request
+
+    if (!userId) {
+        return res.status(401).json({ message: "Unauthorized - invalid user ID" });
+    }
+
+    const user = await User.findOne({ clerkId: userId }).select("-password -__v"); // Find the user by Clerk ID, excluding password and version fields
     if (!user) return res.status(404).json({ message: "User not found" }); // If user not found, return 404 status with message
 
     res.status(200).json(user); // If user found, return 200 status with the user data
@@ -94,6 +103,10 @@ export const getCurrentUser = asyncHandler( async (req, res) => {
 export const followUser = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req); // Get the authenticated user's ID from the request
   const { targetUserId } = req.params; // Extract the target user's ID from the request parameters
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized - invalid user ID" });
+  }
 
   if (userId === targetUserId) return res.status(400).json({ error: "You cannot follow yourself" }); // Prevent the user from following themselves
 
