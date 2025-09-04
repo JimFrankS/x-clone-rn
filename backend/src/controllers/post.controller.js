@@ -162,5 +162,5 @@ export const deletePost = asyncHandler(async (req, res) => {
   // delete the post
   await Post.findByIdAndDelete(postId);
 
-  res.status(200).json({ error: "Post deleted successfully" });
+  res.status(200).json({ message: "Post deleted successfully" });
 });
