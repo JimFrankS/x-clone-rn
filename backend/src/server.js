@@ -1,5 +1,6 @@
 import express from "express"; // Import Express framework for building web applications
 import cors from "cors"; // Import CORS middleware for handling cross-origin requests
+import mongoose from "mongoose"; // Import mongoose for database connection check
 import {clerkMiddleware} from "@clerk/express"; // Import Clerk middleware for authentication
 
 import userRoutes from "./routes/user.route.js"; // Import user routes from user.route.js
@@ -19,6 +20,19 @@ app.use(cors()); // Use CORS middleware to allow cross-origin requests
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 app.use(clerkMiddleware()); // Use Clerk middleware for authentication
+
+// Middleware to connect to database if not connected
+app.use(async (req, res, next) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            await connectDB();
+        }
+        next();
+    } catch (error) {
+        console.error("Database connection error:", error);
+        res.status(500).json({ message: "Database connection failed" });
+    }
+});
 
 // app.use(arcjetMiddleware); // Use Arcjet middleware for security features - disabled
 
