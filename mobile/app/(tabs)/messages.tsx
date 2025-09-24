@@ -95,7 +95,7 @@ const deleteConversation = (conversationId: number) => { // function to delete a
           >
             <Image
               source={{ uri: conversation.user.avatar }}
-              className="size-12 rounded-full mr-3"
+              style={{ width: 48, height: 48, borderRadius: 24, marginRight: 12 }}
             />
 
             <View className="flex-1">
@@ -103,7 +103,7 @@ const deleteConversation = (conversationId: number) => { // function to delete a
                 <View className="flex-row items-center gap-1">
                   <Text className="font-semibold text-gray-900">{conversation.user.name}</Text>
                   {conversation.user.verified && (
-                    <Feather name="check-circle" size={16} color="#1DA1F2" className="ml-1" />
+                    <Feather name="check-circle" size={16} color="#1DA1F2" style={{ marginLeft: 4 }} />
                   )}
                   <Text className="text-gray-500 text-sm ml-1">@{conversation.user.username}</Text>
                 </View>
@@ -130,12 +130,12 @@ const deleteConversation = (conversationId: number) => { // function to delete a
           <SafeAreaView className="flex-1">
             {/* Chat Header */}
             <View className="flex-row items-center px-4 py-3 border-b border-gray-100">
-              <TouchableOpacity onPress={closeChatModal} className="mr-3">
+              <TouchableOpacity onPress={closeChatModal} style={{ marginRight: 12 }}>
                 <Feather name="arrow-left" size={24} color="#1DA1F2" />
               </TouchableOpacity>
               <Image
                 source={{ uri: selectedConversation.user.avatar }}
-                className="size-10 rounded-full mr-3"
+                style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
               />
               <View className="flex-1">
                 <View className="flex-row items-center">
@@ -163,10 +163,10 @@ const deleteConversation = (conversationId: number) => { // function to delete a
                     key={message.id}
                     className={`flex-row mb-3 ${message.fromUser ? "justify-end" : ""}`}
                   >
-                    {!message.fromUser && (
+                      {!message.fromUser && (
                       <Image
                         source={{ uri: selectedConversation.user.avatar }}
-                        className="size-8 rounded-full mr-2"
+                        style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }}
                       />
                     )}
                     <View className={`flex-1 ${message.fromUser ? "items-end" : ""}`}>

@@ -11,7 +11,7 @@ const { handleSocialAuth, isLoading } = useSocialAuth(); // Destructure handleSo
       <View className="items-center"> {/* Start of authentication image */}
           <Image
             source={require("../../assets/images/auth2.png")}
-            className="size-96"
+            style={{ width: 384, height: 384 }}
             resizeMode="contain"
           />
         </View> {/* End of authentication image */}
@@ -34,7 +34,7 @@ const { handleSocialAuth, isLoading } = useSocialAuth(); // Destructure handleSo
               <View className="flex-row items-center justify-center"> {/* Start of Google logo and text */}
               <Image // Google logo
                 source={require("../../assets/images/google.png")}
-                className="size-10 mr-3"
+                style={{ width: 40, height: 40, marginRight: 12 }}
                 resizeMode="contain"
               />
               <Text className="text-black font-medium text-base">
@@ -64,7 +64,7 @@ const { handleSocialAuth, isLoading } = useSocialAuth(); // Destructure handleSo
               <View className="flex-row items-center justify-center"> {/* Start of Apple logo and text */}
               <Image // Apple logo
                 source={require("../../assets/images/apple.png")}
-                className="size-8 mr-3"
+                style={{ width: 32, height: 32, marginRight: 12 }}
                 resizeMode="contain"
               />
               <Text className="text-black font-medium text-base">
