@@ -62,10 +62,9 @@ export const getUserPosts = asyncHandler(async (req, res) => {
 
 export const createPost = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req); // Get the authenticated user's ID from Clerk
-  const { content  } = req.body; // Get the post content from the request body
-  const imageFile = req.files ? req.files.find(f => f.fieldname === 'image') : null; // Get the uploaded image file from the request
+  const { content, image, imageType } = req.body; // Get the post content and image data from the request body
 
-  if (!content && !imageFile) {
+  if (!content && !image) {
     return res.status(400).json({ error: "Post must contain either text or an image" }); // Return an error if neither content nor image is provided
   }
 
@@ -73,10 +72,10 @@ export const createPost = asyncHandler(async (req, res) => {
   if (!user) return res.status(404).json({ error: "User not found" }); // Return an error if the user is not found
 
   let imageUrl = "";
-  if (imageFile) {
+  if (image) {
     try {
-      //convert buffer to base64 for cloudinary upload
-      const base64Image = `data:${imageFile.mimetype};base64,${imageFile.buffer.toString("base64")}`;
+      // Image is sent as base64 string
+      const base64Image = `data:${imageType};base64,${image}`;
 
       const uploadResponse = await cloudinary.uploader.upload(base64Image, {
         folder: "social_media_posts", // Specify the folder in Cloudinary
