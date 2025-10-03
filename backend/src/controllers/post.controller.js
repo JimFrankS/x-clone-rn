@@ -63,7 +63,7 @@ export const getUserPosts = asyncHandler(async (req, res) => {
 export const createPost = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req); // Get the authenticated user's ID from Clerk
   const { content  } = req.body; // Get the post content from the request body
-  const imageFile = req.file; // Get the uploaded image file from the request
+  const imageFile = req.files ? req.files.find(f => f.fieldname === 'image') : null; // Get the uploaded image file from the request
 
   if (!content && !imageFile) {
     return res.status(400).json({ error: "Post must contain either text or an image" }); // Return an error if neither content nor image is provided

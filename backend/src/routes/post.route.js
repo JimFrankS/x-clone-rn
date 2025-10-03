@@ -13,7 +13,7 @@ router.get("/user/:username", getUserPosts); // Route to get posts by a specific
 
 // Protected Routes
 
-router.post("/", protectRoute, upload.single("image"), createPost); // Route to create a new post, protected by authentication middleware and file upload middleware, image upload is optional
+router.post("/", protectRoute, upload.any(), createPost); // Route to create a new post, protected by authentication middleware and file upload middleware, image upload is optional
 router.post("/:postId/like", protectRoute, likePost); // Route to like a post, protected by authentication middleware
 router.delete("/:postId", protectRoute, deletePost); // Route to delete a post, protected by authentication middleware
 
