@@ -53,16 +53,24 @@ export const syncUser = asyncHandler (async (req, res) => {
     }
 
     const existingUser = await User.findOne({ clerkId: userId }); // Check if a user with the given Clerk ID already exists in the database
-    if (existingUser) {
-        return res.status(200).json({ user: existingUser, message: "User already exists" }); // If user exists, return 200 status with the existing user data and a message
-    }
 
     let clerkUser;
     try {
-        clerkUser = await clerkClient.users.getUser(userId); // Create a new user in the database using the authenticated user's Clerk ID and other details
+        clerkUser = await clerkClient.users.getUser(userId); // Fetch user data from Clerk
     } catch (error) {
         console.error("Error fetching user from Clerk:", error);
         return res.status(500).json({ error: "Failed to fetch user data from Clerk" });
+    }
+
+    if (existingUser) {
+        // Update existing user with latest Clerk data
+        const updateData = {
+            firstName: clerkUser.firstName?.trim() || existingUser.firstName,
+            lastName: clerkUser.lastName?.trim() || existingUser.lastName,
+            profilePicture: clerkUser.profileImageUrl || existingUser.profilePicture,
+        };
+        const updatedUser = await User.findOneAndUpdate({ clerkId: userId }, updateData, { new: true });
+        return res.status(200).json({ user: updatedUser, message: "User updated successfully" }); // If user exists, update and return
     }
 
     // Safely extract email and generate username
