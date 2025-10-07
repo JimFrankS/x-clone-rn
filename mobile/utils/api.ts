@@ -1,5 +1,6 @@
 import axios, {AxiosInstance, AxiosError } from "axios";
 import { useAuth } from "@clerk/clerk-expo";
+import { useMemo } from "react";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://x-clone-rn-gamma.vercel.app/" // replace with your actual API base URL
 
@@ -35,13 +36,28 @@ export const createApiClient = (getToken:() => Promise<string | null>, timeout: 
 // Use this hook to get the axios instance from the createApiClient function, ensuring the token is added to the request headers, ensuring authenticated requests are made
 export const useApiClient = ():AxiosInstance => { 
     const {getToken} = useAuth();
-    return createApiClient(getToken);
+    return useMemo(() => {
+        return createApiClient(getToken);
+    }, [getToken]);
 };
 
 // Use this to make API calls to the user API
+// observed that these api calles are extensions to the backend routes.
 
 export const userApi = {
     syncUser: (api: AxiosInstance) => api.post("/api/users/sync"),
     getCurrentUser: (api: AxiosInstance) => api.get("/api/users/me"),
     updateProfile: (api: AxiosInstance, data: any) => api.put("/api/users/profile", data),
+}
+
+export const postApi = {
+    createPost: (api: AxiosInstance, data: {content: string; image?: string}) => api.post("/api/posts", data), //
+    getPosts: (api: AxiosInstance) => api.get("/api/posts"),
+    getUserPosts: (api: AxiosInstance, username: string) => api.get(`/api/posts/user/${username}`),
+    likePost: (api: AxiosInstance, postId: string) => api.post(`/api/posts/${postId}/like`),
+    deletePost: (api: AxiosInstance, postId: string) => api.delete(`/api/posts/${postId}`),
+};
+
+export const commentApi = {
+    createComment: (api: AxiosInstance, postId: string, content: string) => api.post(`/api/comments/post/${postId}`, {content}),
 }

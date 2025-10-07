@@ -1,4 +1,4 @@
-import { View, Text, Image, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, Image, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native'
 import React from 'react'
 import { useCreatePost } from '@/hooks/useCreatePost';
 import { useUser } from '@clerk/clerk-expo';
@@ -23,17 +23,17 @@ const PostComposer = () => {
     <View className="border-b border-gray-100 p-4 bg-white">
         <View className="flex-row"> 
             <Image source={{ uri: user?.imageUrl }} className='w-12 h-12 rounded-full mr-3' />  {/* Acqure User Profile Image from clerk */}
-            <View className='flex-1'>
+            <ScrollView className='flex-1'>
                 <TextInput 
                 className='text-gray-900 text-lg'
-                placeholder="What's happening?"
+                placeholder=""
                 placeholderTextColor = "#657786"
                 multiline
                 value={content}
                 onChangeText={setContent}
                 maxLength={280}
                 /> {/* Text input for new post */}
-            </View>
+            </ScrollView>
         </View>
         {/* Image preview and actions */}
 
