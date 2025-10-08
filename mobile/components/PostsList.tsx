@@ -1,14 +1,19 @@
 import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { usePosts } from '@/hooks/usePosts';
 import { Post } from '@/types';
 import PostCard from './PostCard';
+import CommentModal from './CommentModal';
 
 
 const PostsList = () => {
    const {currentUser} = useCurrentUser(); // Ensure current user data is fetched and available
     const { posts, isLoading, error, refetch, toggleLike, deletePost, checkIsLiked } = usePosts();
+
+    const [selectedPostId, setSelectedPostId] = useState <string | null>(null); // State to track the selected post for detailed view
+
+    const selectedPost = selectedPostId? posts.find((p: Post) => p._id === selectedPostId) : null;
 
     if (isLoading) {
         return (
@@ -47,9 +52,12 @@ const PostsList = () => {
         currentUser={currentUser}
         onLike={toggleLike}
         onDelete={deletePost}
+        onComment={(post: Post) => setSelectedPostId(post._id)}
         isLiked={checkIsLiked(post.likes, currentUser)}
-        />
+        /> 
     ))}
+
+    <CommentModal selectedPost = {selectedPost} onClose={() => setSelectedPostId(null)} /> {/* Comment modal for detailed post view */}
     </>
   )
 }
