@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { useApiClient } from "@/utils/api";
@@ -30,8 +30,25 @@ export const useCreatePost = () => {
         };
         const mimeType = mimeTypeMap[fileType] || "image/jpeg";
 
-        // Read image as base64
-        const base64 = await FileSystem.readAsStringAsync(postData.imageUri, { encoding: FileSystem.EncodingType.Base64 });
+        let base64: string;
+        if (Platform.OS === 'web') {
+          // For web, use FileReader to get base64
+          const response = await fetch(postData.imageUri);
+          const blob = await response.blob();
+          base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = reader.result as string;
+              // readAsDataURL gives "data:image/png;base64,..."
+              resolve(result.split(',')[1]);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } else {
+          // For native, use FileSystem
+          base64 = await FileSystem.readAsStringAsync(postData.imageUri, { encoding: 'base64' as any });
+        }
         formData.append("image", base64);
         formData.append("imageType", mimeType);
       }

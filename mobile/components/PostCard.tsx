@@ -44,7 +44,7 @@ const PostCard = ({ currentUser, onDelete, onLike, post, isLiked, onComment }: P
               {post.user.firstName?.[0]}{post.user.lastName?.[0]}
             </Text>
           </View>
-        )}; {/* User profile picture or initials */}
+        )} {/* User profile picture or initials */}
 
         <View className="flex-1">
           <View className="flex-row items-center justify-between mb-1">
@@ -54,7 +54,7 @@ const PostCard = ({ currentUser, onDelete, onLike, post, isLiked, onComment }: P
               </Text>
 
               <Text className="text-gray-500 ml-1">
-                @{post.user.username} . {formatDate(post.createdAt)}
+                @{post.user.username} · {formatDate(post.createdAt)}
               </Text>
             </View>
 
