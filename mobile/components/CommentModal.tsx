@@ -45,7 +45,7 @@ const CommentModal = ({ selectedPost, onClose }: CommentModalProps) => {
                                         {selectedPost.user.firstName} {selectedPost.user.lastName}
                                     </Text>
                                     <Text className='text-gray-500 ml-1'>
-                                        @{selectedPost.user.username} . {new Date(selectedPost.createdAt).toLocaleDateString()}
+                                        @{selectedPost.user.username} · {new Date(selectedPost.createdAt).toLocaleDateString()}
                                     </Text>
                                 </View>
 
@@ -68,7 +68,7 @@ const CommentModal = ({ selectedPost, onClose }: CommentModalProps) => {
                     {/*  Comments Section */}
 
                     {selectedPost.comments.map((comment) => (
-                        <View className='flex-row'>
+                        <View className='flex-row p-4'>
                             <Image
                                 source={{ uri: comment.user.profilePicture }}
                                 className='size-12 rounded-full mr-3' />
