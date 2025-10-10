@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, ScrollView, Image, TouchableOpacity } from 'react-native'
+import { View, Text, ActivityIndicator, ScrollView, Image, TouchableOpacity, RefreshControl } from 'react-native'
 import React from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth, useUser } from '@clerk/clerk-expo'
@@ -8,6 +8,8 @@ import { Feather } from '@expo/vector-icons'
 import { format } from 'date-fns'
 import { usePosts } from '@/hooks/usePosts'
 import PostsList from '@/components/PostsList'
+import { useProfile } from '@/hooks/useProfile'
+import EditProfileModal from '@/components/EditProfileModal'
 
 const ProfileScreen = () => {
   const { currentUser, isLoading } = useCurrentUser();
@@ -15,8 +17,22 @@ const ProfileScreen = () => {
   const { user } = useUser();
 
 
-  const { posts: userPosts, refetch: refetchPosts, isLoading: isRefetching } = usePosts(currentUser?.username); // Fetch posts for the current user using their username
+  const {
+    posts: userPosts,
+    refetch: refetchPosts,
+    isLoading: isRefetching,
+  } = usePosts(currentUser?.username); // Fetch posts for the current user using their username
 
+  const {
+    isEditModalVisible,
+    openEditModal,
+    closeEditModal,
+    formData,
+    saveProfile,
+    updateFormField,
+    isUpdating,
+    refetch: refetchProfile,
+  } = useProfile();
 
   if (isLoading) {
     return (
@@ -26,7 +42,7 @@ const ProfileScreen = () => {
     )
   }
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       {/* Header */}
       <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-100">
         <View>
@@ -43,7 +59,16 @@ const ProfileScreen = () => {
         className='flex-1'
         contentContainerStyle={{ paddingBottom: 100 + insets.bottom }}
         showsVerticalScrollIndicator={false}
-
+        refreshControl={
+          <RefreshControl 
+          refreshing = {isRefetching}
+          onRefresh = {() => {
+            refetchProfile();
+            refetchPosts();
+          }}
+          tintColor={"#1DA1F2"}
+          />
+        }
       >
         {/* Banner Image */}
         <Image
@@ -67,7 +92,7 @@ const ProfileScreen = () => {
 
             {/* Edit Profile Button */}
 
-            <TouchableOpacity className='border border-gray-300 px-6 py-2 rounded-full'
+            <TouchableOpacity className='border border-gray-300 px-6 py-2 rounded-full' onPress={openEditModal}
             >
               <Text className='font-semibold text-gray-900'>Edit Profile</Text>
             </TouchableOpacity>
@@ -112,6 +137,15 @@ const ProfileScreen = () => {
         {/* Posts List */}
         <PostsList username={currentUser?.username} />
       </ScrollView>
+
+      <EditProfileModal 
+      isVisible={isEditModalVisible}
+      onClose={closeEditModal}
+      formData={formData}
+      saveProfile={saveProfile}
+      updateFormField={updateFormField}
+      isUpdating={isUpdating}
+      />
 
     </SafeAreaView>
   )
