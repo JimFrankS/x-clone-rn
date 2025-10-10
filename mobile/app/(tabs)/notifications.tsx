@@ -25,7 +25,7 @@ const NotificationsScreen = () => {
   }
 
   return (
-    <SafeAreaView className='flex-1 items-center' edges={["top"]}>
+    <SafeAreaView className='flex-1' edges={["top"]}>
       {/* Notifications Header */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100">
         <Text className="text-xl font-bold text-gray-900">Notifications</Text>

@@ -7,9 +7,9 @@ import PostCard from './PostCard';
 import CommentModal from './CommentModal';
 
 
-const PostsList = () => {
+const PostsList = ({username}: {username?: string}) => { // Accept optional username prop to filter posts by user
    const {currentUser} = useCurrentUser(); // Ensure current user data is fetched and available
-    const { posts, isLoading, error, refetch, toggleLike, deletePost, checkIsLiked } = usePosts();
+    const { posts, isLoading, error, refetch, toggleLike, deletePost, checkIsLiked } = usePosts(username); // Pass username to usePosts hook to fetch user-specific posts if provided
 
     const [selectedPostId, setSelectedPostId] = useState <string | null>(null); // State to track the selected post for detailed view
 
